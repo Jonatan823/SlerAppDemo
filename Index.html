@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertidor de Texto S.L.E.R.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        textarea {
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 sm:p-6">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-4xl border border-blue-200">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-indigo-800 mb-2 font-inter">
+                Convertidor de Texto S.L.E.R.
+            </h1>
+            <p class="text-center text-gray-500 mb-4 text-sm sm:text-base font-inter">
+                Fase de Prueba (Beta) - Por Ribot Jonatán
+            </p>
+            <p class="text-center text-gray-600 mb-8 text-sm sm:text-base font-inter">
+                Pega tu texto completo en el área de abajo. Esta herramienta aplicará el Sistema de Lectura y Escritura Recíproca (S.L.E.R.), alternando el orden de las palabras en cada renglón impar y ajustando la puntuación.
+            </p>
+
+            <div class="mb-6">
+                <label for="inputText" class="block text-lg font-semibold text-gray-700 mb-2 font-inter">
+                    Texto Original:
+                </label>
+                <textarea
+                    id="inputText"
+                    class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ease-in-out font-inter text-gray-800 resize-y min-h-[150px] sm:min-h-[200px]"
+                    placeholder="Pega aquí tu texto largo."
+                ></textarea>
+            </div>
+
+            <div class="flex justify-center mb-8">
+                <button
+                    id="convertButton"
+                    class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-300 ease-in-out transform hover:scale-105 font-inter text-lg"
+                >
+                    Convertir a S.L.E.R.
+                </button>
+            </div>
+
+            <div>
+                <label for="slerText" class="block text-lg font-semibold text-gray-700 mb-2 font-inter">
+                    Texto S.L.E.R.:
+                </label>
+                <textarea
+                    id="slerText"
+                    class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-inter resize-y min-h-[150px] sm:min-h-[200px]"
+                    readonly
+                    placeholder="El texto convertido aparecerá aquí..."
+                ></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const slerText = document.getElementById('slerText');
+        const convertButton = document.getElementById('convertButton');
+
+        function breakTextIntoLines(text, maxLineLength = 70) {
+            const words = text.split(/\s+/);
+            const lines = [];
+            let currentLine = '';
+
+            words.forEach(word => {
+                if (currentLine.length + word.length + (currentLine ? 1 : 0) > maxLineLength) {
+                    if (currentLine) {
+                        lines.push(currentLine.trim());
+                    }
+                    currentLine = word;
+                } else {
+                    currentLine += (currentLine ? ' ' : '') + word;
+                }
+            });
+
+            if (currentLine) {
+                lines.push(currentLine.trim());
+            }
+
+            return lines;
+        }
+
+        function convertToSler() {
+            const originalText = inputText.value;
+            const logicalLines = breakTextIntoLines(originalText);
+
+            const slerLines = logicalLines.map((line, index) => {
+                const trimmedLine = line.trim();
+                if (trimmedLine === '') {
+                    return '';
+                }
+
+                if (index % 2 !== 0) { // Odd lines (1st, 3rd, 5th, etc. after breaking)
+                    const words = trimmedLine.split(/\s+/);
+                    const reversedWords = words.reverse().map(word => {
+                        const punctuationMatch = word.match(/([.,!?;:]+)$/);
+                        if (punctuationMatch) {
+                            const punctuation = punctuationMatch[1];
+                            const actualWord = word.slice(0, word.length - punctuation.length);
+                            return punctuation + actualWord;
+                        }
+                        return word;
+                    });
+                    return reversedWords.join(' ');
+                }
+                return trimmedLine;
+            });
+            slerText.value = slerLines.join('\n');
+        }
+
+        convertButton.addEventListener('click', convertToSler);
+    </script>
+</body>
+</html>
